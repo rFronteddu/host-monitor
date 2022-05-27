@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package = "grpc/pinger/";
+
+package pinger;
+
+// The greeting service definition.
+service Pinger {
+  // Sends a ping request
+  rpc Ping (PingRequest) returns (PingReply) {}
+}
+
+// The request message containing the target's ip address.
+message PingRequest {
+  string targetAddress = 1;
+}
+
+// The response message containing information about the ping
+message PingReply {
+  bool reachable = 1;
+  int32 avg_rtt = 2;
+  int32 lost_percentage = 3;
+}

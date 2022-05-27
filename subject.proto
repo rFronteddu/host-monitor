@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package us.ihmc.proto.sensei.measure;
+
+option java_generate_equals_and_hash = true;
+option java_multiple_files = true;
+option go_package = "ihmc.us/nodemon/measure";
+option java_outer_classname = "SubjectProto";
+
+enum Subject {
+    host                    = 0;
+    network                 = 1;
+    traffic                 = 2;
+    cpu                     = 3;
+    memory                  = 4;
+    os                      = 5;
+    network_health          = 6;
+    disservice              = 7;
+    mockets                 = 8;
+    link_description        = 9;
+    netviewer_request       = 10;
+    geolocation             = 11;
+    battery                 = 12;
+    group                   = 13;
+    group_connection        = 14;
+    group_member            = 15;
+    process                 = 16;
+    member_sensor           = 17;
+    topology_node           = 18;
+    topology_edge           = 19;
+    federation_log          = 20;
+    netproxy_process        = 21;
+    netproxy_addr_mapping   = 22;
+    netproxy_proto_mapping  = 23;
+    netproxy_link_desc      = 24;
+    netproxy_link_traffic   = 25;
+    network_interface       = 26;
+    rtt                     = 27;
+    packet_loss	            = 28;
+    dspro_log               = 29;
+    dspro_conf              = 30;
+    dspro_matches           = 31;
+    dspro_publications      = 32;
+    data_tracking           = 33;
+    iw                      = 34;
+    video_stream	    = 35;
+    tcp_retransmission      = 36;
+    msa_sensors             = 37;
+    iobt_sensors            = 38;
+    event                   = 39;
+    bandwidth		    = 40;
+    group_configuration	    = 41;
+}
