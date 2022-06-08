@@ -22,3 +22,6 @@ go.work
 
 #.idea files
 .idea/
+
+# Output file
+hostmonitor
