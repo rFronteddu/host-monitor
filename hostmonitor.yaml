@@ -1,2 +1,7 @@
+VMSensor: true
+CPU: true
 Host: true
-#DiskSensor: true
+#NetSensor: true
+#Disk: true
+#Load: true
+#Master: "127.0.0.1"

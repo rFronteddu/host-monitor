@@ -8,8 +8,6 @@ import (
 	"hostmonitor/sensors"
 	"hostmonitor/transport"
 	"io/ioutil"
-	"os"
-	"strings"
 	"time"
 )
 
@@ -23,24 +21,18 @@ type Configuration struct {
 	Master     string `yaml:"Master"`
 }
 
-func loadConfiguration(paths [2]string) *Configuration {
-	yfile, err := ioutil.ReadFile(paths[0])
+func loadConfiguration(path string) *Configuration {
+	yfile, err := ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Printf("Could not open %s error: %s\n", paths[0], err)
-		yfile, err = ioutil.ReadFile(paths[1])
-		if err != nil {
-			fmt.Printf("Could not open %s error: %s\n", paths[1], err)
-			conf := &Configuration{true, true, true, true, true, true, "127.0.0.1:8758"}
-			fmt.Printf("Host Monitor will use default configuration: %v\n", conf)
-			return conf
-		}
+		fmt.Printf("Could not open %s error: %s\n", path, err)
+		conf := &Configuration{true, true, true, true, true, true, "127.0.0.1:8758"}
+		fmt.Printf("Host Monitor will use default configuration: %v\n", conf)
+		return conf
 	}
 	if yfile == nil {
 		panic("There was no error but YFile was null")
 	}
 	conf := Configuration{Master: "127.0.0.1:8758"}
-	// fmt.Printf("Test: configuration: %+v\n", conf)
-	//” %+v or %#v.
 	err2 := yaml.Unmarshal(yfile, &conf)
 	if err2 != nil {
 		fmt.Printf("Configuration file could not be parsed, error: %s\n", err2)
@@ -52,21 +44,7 @@ func loadConfiguration(paths [2]string) *Configuration {
 }
 
 func main() {
-	files := [2]string{"hostmonitor.yaml", "/usr/lib/sensei/yaml/hostmonitor/hostmonitor.yaml"}
-	if strings.Contains(strings.Join(os.Args[1:], ";"), "-h") {
-		fmt.Printf("Hello this is the Host Monitor. I am a simple golang program created by rfronteddu [ @ ] ihmc [ . ] org. I harvest host statistics and produce Measures that can be parsed by SENSEI\n")
-		fmt.Printf("I am also designed to interoperate with the Testbed Monitor, another utility created by rfronteddu.\n")
-		fmt.Printf("Note that not all sensors produce results for every architecture. The Load Sensor for example only works in Linux.\n")
-		fmt.Printf("To configure me, create a file either in %s or in %s\n", files[0], files[1])
-		fmt.Printf("If a conf file is not found, everything is active and statistics are delivered towards localhost")
-		fmt.Printf("The following are the configurable parameters with default values when a file is found. \n")
-		fmt.Printf("* Sensor flags are used to enable each respective sensor.\n")
-		fmt.Printf("** Note that YAML is case sensitive and that I do not do any input validation.\n")
-		conf := Configuration{Master: "127.0.0.1:8758"}
-		fmt.Printf("%+v\n", conf)
-		return
-	}
-	conf := loadConfiguration(files)
+	conf := loadConfiguration("hostmonitor.yaml")
 
 	reportCh := make(chan *measure.Measure)
 
@@ -82,17 +60,14 @@ func main() {
 		hostSensor := sensors.NewSensor(sensors.NewHostSensor(time.Minute), "Host Sensor", reportCh)
 		hostSensor.Start()
 	}
-
 	if conf.NetSensor {
 		netSensor := sensors.NewSensor(sensors.NewNetSensor(time.Minute), "Net Sensor", reportCh)
 		netSensor.Start()
 	}
-
 	if conf.DiskSensor {
 		diskSensor := sensors.NewSensor(sensors.NewDiskSensor(time.Minute), "Disk Sensor", reportCh)
 		diskSensor.Start()
 	}
-
 	// only works on linux
 	if conf.LoadSensor {
 		loadSensor := sensors.NewSensor(sensors.NewLoadSensor(time.Minute), "Load Sensor", reportCh)
