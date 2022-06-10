@@ -4,4 +4,4 @@ Host: true
 #NetSensor: true
 #Disk: true
 #Load: true
-#Master: "127.0.0.1"
+Master: "127.0.0.1:8758"

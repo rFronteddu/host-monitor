@@ -27,5 +27,5 @@ func (icmpP *ICMPProbe) Start() {
 }
 
 func (icmpP *ICMPProbe) ping() {
-	//ping(icmpP.target, icmpP.replyCh)
+	ping(icmpP.target, icmpP.replyCh)
 }
