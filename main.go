@@ -3,12 +3,18 @@ package main
 import (
 	"fmt"
 	"gopkg.in/yaml.v3"
+	"hostmonitor/arduino"
 	"hostmonitor/grpc"
 	"hostmonitor/measure"
 	"hostmonitor/sensors"
 	"hostmonitor/transport"
 	"io/ioutil"
 	"time"
+)
+
+const (
+	BOARD_IP          = "127.0.0.1"
+	PINGER_PROXY_PORT = 8090
 )
 
 type Configuration struct {
@@ -74,11 +80,14 @@ func main() {
 		loadSensor.Start()
 	}
 
-	t := transport.NewUDPClient(conf.Master, reportCh, 2*time.Minute)
+	t := transport.NewUDPClient(conf.Master, reportCh, 60*time.Minute)
 	t.Start()
 
-	server := grpc.NewPingerProxy(8090)
+	server := grpc.NewPingerProxy(PINGER_PROXY_PORT)
 	server.Start()
+
+	arduino := arduino.NewArduinoMonitor()
+	arduino.Start(BOARD_IP)
 
 	quitCh := make(chan int)
 	<-quitCh

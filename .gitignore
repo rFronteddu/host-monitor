@@ -25,3 +25,6 @@ go.work
 
 # Output file
 hostmonitor
+
+# Report files
+*.txt
