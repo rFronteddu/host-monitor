@@ -16,14 +16,16 @@ func NewArduinoMonitor() *Monitor {
 
 func (monitor *Monitor) Start(BOARD_IP string) {
 	fmt.Printf("Starting Arduino Monitor...\n")
-	ticker := time.NewTicker(10 * time.Second)
-	//lastReached := time.Time{}
-	//dailyUnreachableCount := 0
+	ticker := time.NewTicker(60 * time.Minute)
+	lastArduinoReachableTimestamp := time.Time{}
 	go func() {
 		for _ = range ticker.C {
-			println("Pinging Arduino") ///////////////////////
+			println("\nPinging Arduino...\n")
 			pingTask := task.NewPingTask()
-			pingTask.Start(BOARD_IP)
+			if pingTask.Start(BOARD_IP) == true {
+				lastArduinoReachableTimestamp = time.Now()
+			}
+			fmt.Printf("\nLast Arduino reachable timestamp: %s", lastArduinoReachableTimestamp.String())
 		}
 	}()
 }

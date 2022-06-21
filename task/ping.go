@@ -21,11 +21,12 @@ func NewPingTask() *Ping {
 	return task
 }
 
-func (task *Ping) Start(HOST_IP string) {
-	go task.execute(HOST_IP)
+func (task *Ping) Start(HOST_IP string) (reachable bool) {
+	reachable = task.execute(HOST_IP)
+	return reachable
 }
 
-func (task *Ping) execute(HOST_IP string) {
+func (task *Ping) execute(HOST_IP string) (reachable bool) {
 	conn, err := grpc.Dial(HOST_IP+":8090", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -45,19 +46,21 @@ func (task *Ping) execute(HOST_IP string) {
 		err := LogPing(filename, "Could not reach the board: "+HOST_IP)
 		log.Fatalf("Could not greet: %v", err)
 	}
-
+	reachable = false
 	if r.GetReachable() {
 		pingResponse := "Reached board: " + HOST_IP + "  Packet Loss: " + strconv.Itoa(int(r.GetLostPercentage())) + "  Rtt: " + strconv.Itoa(int(r.GetAvgRtt()))
 		var filename = time.Now().Format("2006-01-02_1504")
 		filename += "_Ping.txt"
 		LogPing(filename, pingResponse)
 		log.Printf("%s/n", pingResponse)
+		reachable = true
 	} else {
 		var filename = time.Now().Format("2006-01-02_1504")
 		filename += "_Ping.txt"
 		LogPing(filename, "Reached the board: "+HOST_IP+", but could not reach endpoint.")
 		log.Printf("Endpoint was not reachable")
 	}
+	return reachable
 }
 
 // LogPing This function writes report data to a file
