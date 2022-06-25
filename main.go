@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"gopkg.in/yaml.v3"
-	"hostmonitor/arduino"
 	"hostmonitor/grpc"
 	"hostmonitor/measure"
+	"hostmonitor/probers"
 	"hostmonitor/sensors"
 	"hostmonitor/transport"
 	"io/ioutil"
@@ -54,6 +54,12 @@ func main() {
 
 	reportCh := make(chan *measure.Measure)
 
+	board := probers.NewBoardMonitor()
+	board.Start(BOARD_IP)
+
+	boardPingSensor := sensors.NewSensor(sensors.NewBoardPingSensor(time.Minute, board), "Board Ping Sensor", reportCh)
+	boardPingSensor.Start()
+
 	if conf.VMSensor {
 		virtualMemorySensor := sensors.NewSensor(sensors.NewVirtualMemorySensor(time.Minute), "Disk Sensor", reportCh)
 		virtualMemorySensor.Start()
@@ -80,14 +86,11 @@ func main() {
 		loadSensor.Start()
 	}
 
-	t := transport.NewUDPClient(conf.Master, reportCh, 60*time.Minute)
+	t := transport.NewUDPClient(conf.Master, reportCh, 60*time.Second)
 	t.Start()
 
 	server := grpc.NewPingerProxy(PINGER_PROXY_PORT)
 	server.Start()
-
-	arduino := arduino.NewArduinoMonitor()
-	arduino.Start(BOARD_IP)
 
 	quitCh := make(chan int)
 	<-quitCh

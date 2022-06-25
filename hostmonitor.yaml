@@ -1,5 +1,5 @@
-#VMSensor: true
-#CPU: true
+VMSensor: true
+CPU: true
 Host: true
 #NetSensor: true
 #Disk: true
