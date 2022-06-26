@@ -2,6 +2,7 @@ package probers
 
 import (
 	"fmt"
+	"hostmonitor/measure"
 	pb "hostmonitor/pinger"
 	"time"
 )
@@ -16,12 +17,11 @@ func NewBoardMonitor() *Monitor {
 	return boardMonitor
 }
 
-func (monitor *Monitor) Start(BOARD_IP string) {
+func (monitor *Monitor) Start(BOARD_IP string, inCh chan *measure.Measure) {
 	fmt.Printf("Starting periodic pinger...\n")
 	replyCh := make(chan *pb.PingReply)
 	var p *pb.PingReply
 	ticker := time.NewTicker(60 * time.Second)
-	monitor.lastReachable = time.Time{}
 	go func() {
 		for _ = range ticker.C {
 			fmt.Printf("\nPinging board @ %s...\n", BOARD_IP)
@@ -30,14 +30,17 @@ func (monitor *Monitor) Start(BOARD_IP string) {
 			p = <-replyCh
 			if p.Reachable == true {
 				monitor.lastReachable = time.Now()
-				fmt.Printf("\nBoard %s was reached at %s", BOARD_IP, monitor.lastReachable.String())
+				fmt.Printf("Board %s was reached at %s\n", BOARD_IP, monitor.lastReachable.String())
+				m := &measure.Measure{
+					Strings:  make(map[string]string),
+					Integers: make(map[string]int64),
+					Doubles:  make(map[string]float64),
+				}
+				m.Integers["LastArduinoReachableTimestamp"] = int64(time.Now().Sub(monitor.lastReachable).Seconds())
+				inCh <- m
 			} else {
 				fmt.Printf("\nBoard %s is unreachable!", BOARD_IP)
 			}
 		}
 	}()
-}
-
-func GetLastReachableTimestamp(boardMonitor *Monitor) time.Time {
-	return boardMonitor.lastReachable
 }

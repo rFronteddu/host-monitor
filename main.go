@@ -55,10 +55,7 @@ func main() {
 	reportCh := make(chan *measure.Measure)
 
 	board := probers.NewBoardMonitor()
-	board.Start(BOARD_IP)
-
-	boardPingSensor := sensors.NewSensor(sensors.NewBoardPingSensor(time.Minute, board), "Board Ping Sensor", reportCh)
-	boardPingSensor.Start()
+	board.Start(BOARD_IP, reportCh)
 
 	if conf.VMSensor {
 		virtualMemorySensor := sensors.NewSensor(sensors.NewVirtualMemorySensor(time.Minute), "Disk Sensor", reportCh)
@@ -86,7 +83,7 @@ func main() {
 		loadSensor.Start()
 	}
 
-	t := transport.NewUDPClient(conf.Master, reportCh, 60*time.Second)
+	t := transport.NewUDPClient(conf.Master, reportCh, 2*time.Minute)
 	t.Start()
 
 	server := grpc.NewPingerProxy(PINGER_PROXY_PORT)
