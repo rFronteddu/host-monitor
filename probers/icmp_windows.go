@@ -47,14 +47,13 @@ func ping(target string, replyCh chan *pb.PingReply) {
 		}
 	}
 
-	// 100 : packetsSent = x : packetsReceived
-	// x = 100 * packetsSent / packetsReceived
 	fmt.Printf("Packet sent: %v Packets received: %v Avg rtt: %v\n", packetsSent, packetsReceived, rtt)
 	replyCh <- &pb.PingReply{
 		Reachable:      true,
 		AvgRtt:         int32(rtt),
 		LostPercentage: int32(100 - (100 * packetsSent / packetsReceived)),
 	}
+
 }
 
 func extractAverageRTT(out string) int {

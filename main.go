@@ -5,10 +5,16 @@ import (
 	"gopkg.in/yaml.v3"
 	"hostmonitor/grpc"
 	"hostmonitor/measure"
+	"hostmonitor/probers"
 	"hostmonitor/sensors"
 	"hostmonitor/transport"
 	"io/ioutil"
 	"time"
+)
+
+const (
+	BOARD_IP          = "127.0.0.1"
+	PINGER_PROXY_PORT = 8090
 )
 
 type Configuration struct {
@@ -48,6 +54,9 @@ func main() {
 
 	reportCh := make(chan *measure.Measure)
 
+	board := probers.NewBoardMonitor()
+	board.Start(BOARD_IP, reportCh)
+
 	if conf.VMSensor {
 		virtualMemorySensor := sensors.NewSensor(sensors.NewVirtualMemorySensor(time.Minute), "Disk Sensor", reportCh)
 		virtualMemorySensor.Start()
@@ -77,7 +86,7 @@ func main() {
 	t := transport.NewUDPClient(conf.Master, reportCh, 2*time.Minute)
 	t.Start()
 
-	server := grpc.NewPingerProxy(8090)
+	server := grpc.NewPingerProxy(PINGER_PROXY_PORT)
 	server.Start()
 
 	quitCh := make(chan int)
