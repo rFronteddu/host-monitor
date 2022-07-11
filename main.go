@@ -86,7 +86,7 @@ func main() {
 		loadSensor.Start()
 	}
 
-	t := transport.NewUDPClient(conf.Master, reportCh, 2*time.Minute)
+	t := transport.NewUDPClient(conf.Master, reportCh, 1*time.Minute)
 	t.Start()
 
 	server := grpc.NewPingerProxy(PINGER_PROXY_PORT)

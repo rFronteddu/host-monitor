@@ -39,16 +39,17 @@ func (rebootCounter *RebootCounter) Start(inCh chan *measure.Measure) {
 
 // GetReboots This function runs reboots.sh which returns the number of reboots for the current day
 func GetReboots() int64 {
-	var cmd = exec.Command("/bin/sh", "probers/reboots.sh")
+	var cmd = exec.Command("bash", "./reboots.sh")
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-		fmt.Printf("Error trying to get # of reboots\n")
+		fmt.Printf("Error trying to get # of reboots: %v\n", err)
 		return 100
 	}
+	time.Sleep(10 * time.Millisecond)
 	reboots, err := strconv.Atoi(strings.Split(out.String(), "\n")[0])
 	if err != nil {
 		fmt.Printf("Error parsing system response: %v\n", err)
