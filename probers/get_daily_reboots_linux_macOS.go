@@ -26,7 +26,7 @@ func (rebootCounter *RebootCounter) Start(inCh chan *measure.Measure) {
 	fmt.Printf("Starting reboot counter...\n")
 	ticker := time.NewTicker(60 * time.Second)
 	go func() {
-		for _ = range ticker.C {
+		for range ticker.C {
 			rebootCounter.reboots = GetReboots()
 			m := &measure.Measure{
 				Strings:  make(map[string]string),
