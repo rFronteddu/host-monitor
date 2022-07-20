@@ -22,5 +22,7 @@ func (sensor *Disk) Poll(measure *measure.Measure) {
 	usage, _ := disk.Usage("/")
 	fmt.Printf("Disk Report - Usage: %v\n", usage)
 	measure.Integers["DISK_USAGE"] = int64(usage.UsedPercent)
-	measure.Integers["DISK_FREE"] = int64(usage.Free)
+	measure.Integers["DISK_FREE"] = int64(usage.Free) / 1024 / 1024 / 1024
+	measure.Integers["DISK_USED"] = int64(usage.Used) / 1024 / 1024 / 1024
+	measure.Integers["DISK_TOTAL"] = int64(usage.Total) / 1024 / 1024 / 1024
 }
