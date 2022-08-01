@@ -9,7 +9,6 @@ import (
 	"hostmonitor/sensors"
 	"hostmonitor/transport"
 	"io/ioutil"
-	"log"
 	"net"
 	"strconv"
 	"strings"
@@ -56,15 +55,17 @@ func loadConfiguration(path string) *Configuration {
 
 // Get preferred outbound ip of this machine
 func GetOutboundIP() string {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		log.Fatal(err)
+	for {
+		conn, err := net.Dial("udp", "8.8.8.8:80")
+		if err != nil {
+			fmt.Println(err.Error() + ", will try again in 5 seconds")
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		defer conn.Close()
+
+		return conn.LocalAddr().(*net.UDPAddr).IP.String()
 	}
-	defer conn.Close()
-
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-
-	return localAddr.IP.String()
 }
 
 func main() {
