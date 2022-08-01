@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	PINGER_PROXY_PORT = 8090
+	PINGER_PROXY_PORT = 8100
 )
 
 type Configuration struct {
