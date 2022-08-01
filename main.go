@@ -9,29 +9,34 @@ import (
 	"hostmonitor/sensors"
 	"hostmonitor/transport"
 	"io/ioutil"
+	"log"
+	"net"
+	"strconv"
+	"strings"
 	"time"
 )
 
 const (
-	BOARD_IP          = "127.0.0.1"
 	PINGER_PROXY_PORT = 8090
 )
 
 type Configuration struct {
-	VMSensor   bool   `yaml:"VMSensor"`
-	CPUSensor  bool   `yaml:"CPU"`
-	HostSensor bool   `yaml:"Host"`
-	NetSensor  bool   `yaml:"NetSensor"`
-	DiskSensor bool   `yaml:"Disk"`
-	LoadSensor bool   `yaml:"Load"`
-	Master     string `yaml:"Master"`
+	VMSensor     bool   `yaml:"VMSensor"`
+	CPUSensor    bool   `yaml:"CPU"`
+	HostSensor   bool   `yaml:"Host"`
+	NetSensor    bool   `yaml:"NetSensor"`
+	DiskSensor   bool   `yaml:"Disk"`
+	LoadSensor   bool   `yaml:"Load"`
+	Master       string `yaml:"Master"`
+	BoardIP      string `yaml:"BoardIP"`
+	ReportPeriod string `yaml:"Period"`
 }
 
 func loadConfiguration(path string) *Configuration {
 	yfile, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Printf("Could not open %s error: %s\n", path, err)
-		conf := &Configuration{true, true, true, true, true, true, "127.0.0.1:8758"}
+		conf := &Configuration{true, true, true, true, true, true, "127.0.0.1:8758", "127.0.0.1", "30"}
 		fmt.Printf("Host Monitor will use default configuration: %v\n", conf)
 		return conf
 	}
@@ -49,13 +54,35 @@ func loadConfiguration(path string) *Configuration {
 	return &conf
 }
 
+// Get preferred outbound ip of this machine
+func GetOutboundIP() string {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP.String()
+}
+
 func main() {
 	conf := loadConfiguration("hostmonitor.yaml")
-
 	reportCh := make(chan *measure.Measure)
 
+	var boardAddress string
+	if conf.BoardIP != "" {
+		boardAddress = conf.BoardIP
+	} else {
+		outboundIP := GetOutboundIP()
+		s := strings.Split(outboundIP, ".")
+		s[len(s)-1] = "1"
+		boardAddress = strings.Join(s[:], ".")
+		fmt.Println("The board address was not specified so it was automatically detected as: " + boardAddress)
+	}
 	board := probers.NewBoardMonitor()
-	board.Start(BOARD_IP, reportCh)
+	board.Start(boardAddress, reportCh)
 
 	reboot := probers.NewRebootCounter()
 	reboot.Start(reportCh)
@@ -86,7 +113,17 @@ func main() {
 		loadSensor.Start()
 	}
 
-	t := transport.NewUDPClient(conf.Master, reportCh, 30*time.Minute)
+	reportPeriod := 30
+	var err error
+	if conf.ReportPeriod != "" {
+		reportPeriod, err = strconv.Atoi(conf.ReportPeriod)
+		if err != nil {
+			fmt.Printf("Error converting %s to integer, period set to default (30)", conf.ReportPeriod)
+		}
+		fmt.Printf("Period was overridden: " + conf.ReportPeriod)
+	}
+
+	t := transport.NewUDPClient(conf.Master, reportCh, time.Duration(reportPeriod)*time.Minute)
 	t.Start()
 
 	server := grpc.NewPingerProxy(PINGER_PROXY_PORT)
