@@ -36,7 +36,7 @@ func ping(target string, replyCh chan *pb.PingReply) {
 
 	tokens := strings.Split(out.String(), "\n")
 	for _, token := range tokens {
-		if strings.Contains(s, "unreachable") {
+		if strings.Contains(token, "unreachable") {
 			fmt.Printf("Destination %s unreachable\n", target)
 		}
 		if strings.Contains(token, "packets transmitted") {
