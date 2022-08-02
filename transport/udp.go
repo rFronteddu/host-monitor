@@ -34,11 +34,12 @@ func (udpc *UDPClient) sendReports() {
 		Integers: make(map[string]int64),
 		Doubles:  make(map[string]float64),
 	}
-	timer := time.NewTimer(udpc.period)
+	fmt.Printf("Sending report to %s, %s\n", udpc.destination, "Hello")
+	udpc.send([]byte("Hello"))
+	ticker := time.NewTimer(udpc.period)
 	for {
 		select {
-		case <-timer.C:
-			timer = time.NewTimer(udpc.period)
+		case <-ticker.C:
 			m.Timestamp = &timestamp.Timestamp{Seconds: time.Now().Unix()}
 			out, marshalError := proto.Marshal(m)
 			if marshalError != nil {

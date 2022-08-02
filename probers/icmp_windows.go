@@ -21,8 +21,7 @@ func ping(target string, replyCh chan *pb.PingReply) {
 	err := cmd.Run()
 
 	if err != nil {
-		// was not able to ping
-		fmt.Printf("Probe was not able to reach %s\n", target)
+		fmt.Printf("Unable to ping %s\n", target)
 		replyCh <- &pb.PingReply{
 			Reachable:      false,
 			AvgRtt:         0,
@@ -38,6 +37,15 @@ func ping(target string, replyCh chan *pb.PingReply) {
 	s1 := strings.Split(out.String(), "\n")
 	for _, s := range s1 {
 		fmt.Println(s)
+		if strings.Contains(s, "Destination host unreachable") {
+			fmt.Printf("Destination host unreachable @ %s\n", target)
+			replyCh <- &pb.PingReply{
+				Reachable:      false,
+				AvgRtt:         0,
+				LostPercentage: 0,
+			}
+			return
+		}
 		if strings.Contains(s, "Packets: Sent") {
 			packetsSent, packetsReceived = extractReceivedAndSent(s)
 		}

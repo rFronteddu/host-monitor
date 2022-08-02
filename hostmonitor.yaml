@@ -6,5 +6,5 @@ Disk: true
 #Load: true
 Master: "127.0.0.1:8758"
 #BoardIP: ""
-ReportPeriod: "50"
+ReportPeriod: "2"
 PingerProxyPort: "8100"
