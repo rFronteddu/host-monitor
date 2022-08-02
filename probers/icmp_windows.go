@@ -37,12 +37,12 @@ func ping(target string, replyCh chan *pb.PingReply) {
 	s1 := strings.Split(out.String(), "\n")
 	for _, s := range s1 {
 		fmt.Println(s)
-		if strings.Contains(s, "Destination host unreachable") {
-			fmt.Printf("Destination host unreachable @ %s\n", target)
+		if strings.Contains(s, "unreachable") {
+			fmt.Printf("Destination %s unreachable\n", target)
 			replyCh <- &pb.PingReply{
 				Reachable:      false,
 				AvgRtt:         0,
-				LostPercentage: 0,
+				LostPercentage: 100,
 			}
 			return
 		}
