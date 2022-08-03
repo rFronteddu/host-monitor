@@ -28,15 +28,28 @@ func (udpc *UDPClient) Start() {
 }
 
 func (udpc *UDPClient) sendReports() {
+	// Send out initial handshake
+	m0 := &measure.Measure{
+		Subject:  measure.Subject_os,
+		Strings:  make(map[string]string),
+		Integers: make(map[string]int64),
+		Doubles:  make(map[string]float64),
+	}
+	m0.Strings["host_id"] = "Hello"
+	out0, marshalError0 := proto.Marshal(m0)
+	if marshalError0 != nil {
+		fmt.Printf("Encountered an error while marshaling measure %v\n", marshalError0)
+	}
+	fmt.Printf("Sending handshake to %s, %s\n", udpc.destination, m0.String())
+	udpc.send(out0)
+
+	ticker := time.NewTicker(udpc.period)
 	m := &measure.Measure{
 		Subject:  measure.Subject_os,
 		Strings:  make(map[string]string),
 		Integers: make(map[string]int64),
 		Doubles:  make(map[string]float64),
 	}
-	fmt.Printf("Sending report to %s, %s\n", udpc.destination, "Hello")
-	udpc.send([]byte("Hello"))
-	ticker := time.NewTimer(udpc.period)
 	for {
 		select {
 		case <-ticker.C:
