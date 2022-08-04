@@ -11,9 +11,6 @@ type Host struct {
 	period time.Duration
 }
 
-var lastBootTime = uint64(time.Now().Unix())
-var dailyRebootCounter int64 = 0
-
 func NewHostSensor(period time.Duration) *Host {
 	sensor := new(Host)
 	sensor.period = period

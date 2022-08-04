@@ -78,6 +78,9 @@ func (udpc *UDPClient) sendReports() {
 			for k, v := range msg.Strings {
 				m.Strings[k] = v
 			}
+			if m.Integers["uptime"] != 0 && m.Integers["uptime"] < int64(udpc.period.Seconds()) {
+				m.Integers["reboots"] = 1
+			}
 		}
 	}
 }
