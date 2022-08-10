@@ -22,16 +22,23 @@ Note that YAML is case-sensitive and there is no input validation.
     # Enables the HOST report (OS, CPU, etc)
     Host: true
     # Enables the NETWORK report (Bytes generated and received by the host)
-    NetSensor: true
+    NetSensor: false
     # Enables the DISK report (HD free space)
-    Disk: true 
+    Disk: true
     # Enables the Load reports (1/5/15 reports, only works on unix)
-    Load: true
-    # Specifies where to send reports
+    Load: false
+    # Specifies where to send reports, IP address and Port
     Master: 127.0.0.1:8758
+    # The IP of the controller to ping periodically for reachability
+    # (if not defined, it will be obtained as the host IP x.x.x.1)
+    #BoardIP: ""
+    # How often a report is sent in minutes (default 30)
+    ReportPeriod: "2"
+    # The port to listen for GRPC ping
+    PingerProxyPort: "8100"
 ```
 ## Connections
-The host monitor listens for GRPC connections on port 8090.
+The host monitor listens for GRPC connections on the defined port.
 Reports are sent to the Master address via UDP connection.
 
 ## Installation
