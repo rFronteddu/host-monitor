@@ -21,7 +21,7 @@ func NewSensor(sensor sensor, tag string, outCh chan *measure.Measure) *BaseSens
 }
 
 func (base *BaseSensor) Start() {
-	fmt.Printf("\tStarting %s\n", base.tag)
+	fmt.Printf("Starting %s...\n", base.tag)
 	go func() {
 		for {
 			base.poll()

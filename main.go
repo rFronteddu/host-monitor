@@ -15,27 +15,24 @@ import (
 	"time"
 )
 
-const (
-	PINGER_PROXY_PORT = 8100
-)
-
 type Configuration struct {
-	VMSensor     bool   `yaml:"VMSensor"`
-	CPUSensor    bool   `yaml:"CPU"`
-	HostSensor   bool   `yaml:"Host"`
-	NetSensor    bool   `yaml:"NetSensor"`
-	DiskSensor   bool   `yaml:"Disk"`
-	LoadSensor   bool   `yaml:"Load"`
-	Master       string `yaml:"Master"`
-	BoardIP      string `yaml:"BoardIP"`
-	ReportPeriod string `yaml:"Period"`
+	VMSensor        bool   `yaml:"VMSensor"`
+	CPUSensor       bool   `yaml:"CPU"`
+	HostSensor      bool   `yaml:"Host"`
+	NetSensor       bool   `yaml:"NetSensor"`
+	DiskSensor      bool   `yaml:"Disk"`
+	LoadSensor      bool   `yaml:"Load"`
+	Master          string `yaml:"Master"`
+	BoardIP         string `yaml:"BoardIP"`
+	ReportPeriod    string `yaml:"ReportPeriod"`
+	PingerProxyPort string `yaml:"PingerProxyPort"`
 }
 
 func loadConfiguration(path string) *Configuration {
 	yfile, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Printf("Could not open %s error: %s\n", path, err)
-		conf := &Configuration{true, true, true, true, true, true, "127.0.0.1:8758", "127.0.0.1", "30"}
+		conf := &Configuration{true, true, true, true, true, true, "127.0.0.1:8758", "127.0.0.1", "30", "8090"}
 		fmt.Printf("Host Monitor will use default configuration: %v\n", conf)
 		return conf
 	}
@@ -85,9 +82,6 @@ func main() {
 	board := probers.NewBoardMonitor()
 	board.Start(boardAddress, reportCh)
 
-	reboot := probers.NewRebootCounter()
-	reboot.Start(reportCh)
-
 	if conf.VMSensor {
 		virtualMemorySensor := sensors.NewSensor(sensors.NewVirtualMemorySensor(time.Minute), "Disk Sensor", reportCh)
 		virtualMemorySensor.Start()
@@ -121,13 +115,21 @@ func main() {
 		if err != nil {
 			fmt.Printf("Error converting %s to integer, period set to default (30)", conf.ReportPeriod)
 		}
-		fmt.Printf("Period was overridden: " + conf.ReportPeriod)
+		fmt.Printf("Report period set to %v minutes\n", conf.ReportPeriod)
 	}
 
 	t := transport.NewUDPClient(conf.Master, reportCh, time.Duration(reportPeriod)*time.Minute)
 	t.Start()
 
-	server := grpc.NewPingerProxy(PINGER_PROXY_PORT)
+	pingerProxyPort := 8090
+	if conf.PingerProxyPort != "" {
+		pingerProxyPort, err = strconv.Atoi(conf.PingerProxyPort)
+		if err != nil {
+			fmt.Printf("Error converting %s to integer, pinger proxy port set to default (8090)", conf.ReportPeriod)
+		}
+		fmt.Printf("Pinger proxy port set to: %v\n", conf.PingerProxyPort)
+	}
+	server := grpc.NewPingerProxy(pingerProxyPort)
 	server.Start()
 
 	quitCh := make(chan int)

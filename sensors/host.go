@@ -19,6 +19,7 @@ func NewHostSensor(period time.Duration) *Host {
 
 func (sensor *Host) Poll(measure *measure.Measure) {
 	time.Sleep(sensor.period)
+
 	h, _ := host.Info()
 	fmt.Printf("Host Report - Host ID: %v Host Name: %v, OS: %v, Platform: %v, Arch: %v, Boot Date: %v, Uptime: %v\n", h.HostID, h.Hostname, h.OS, h.Platform, h.KernelArch, time.Unix(int64(h.BootTime), 0), h.Uptime)
 
@@ -28,4 +29,5 @@ func (sensor *Host) Poll(measure *measure.Measure) {
 	measure.Strings["platform"] = h.Platform
 	measure.Strings["kernelArch"] = h.KernelArch
 	measure.Strings["bootTime"] = time.Unix(int64(h.BootTime), 0).Format(time.RFC822)
+	measure.Integers["uptime"] = int64(h.Uptime)
 }

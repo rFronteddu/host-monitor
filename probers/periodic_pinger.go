@@ -39,7 +39,7 @@ func (monitor *Monitor) Start(BOARD_IP string, inCh chan *measure.Measure) {
 				m.Integers["LastArduinoReachableTimestamp"] = int64(time.Now().Sub(monitor.lastReachable).Seconds())
 				inCh <- m
 			} else {
-				fmt.Printf("\nBoard %s is unreachable!", BOARD_IP)
+				fmt.Printf("Board %s could not be reached.\n", BOARD_IP)
 			}
 		}
 	}()
