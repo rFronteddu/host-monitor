@@ -7,13 +7,10 @@ The app is designed to run in conjunction with the **Testbed Monitor** (https://
 Sensors are imported from the library https://github.com/shirou/gopsutil.
 Note that not all sensors produce results for every architecture. The Load Sensor, for example, only works in Linux.
 
-## Configuration
-The host monitor will look for a configuration file called **hostmonitor.yaml**.
-Once a configuration file is found, active sensors must be defined. Sensor flags are used to enable each respective sensor.<br>
-If a conf file is not found, everything is active and statistics are delivered towards localhost.<br>
-Note that YAML is case-sensitive and there is no input validation.
+## Inputs
+The host monitor will look for a configuration file called **hostmonitor.yaml**.If no conf file is  found, everything is active and statistics are delivered towards localhost.
 
-### Configuration example
+### hostmonitor.yaml
 ```
     # Enables the virtual memory sensor (RAM reports)
     VMSensor: true
@@ -34,18 +31,20 @@ Note that YAML is case-sensitive and there is no input validation.
     #BoardIP: ""
     # How often a report is sent in minutes (default 30)
     ReportPeriod: "2"
-    # The port to listen for GRPC ping
+    # The port to listen for GRPC pings
     PingerProxyPort: "8100"
 ```
-## Connections
-The host monitor listens for GRPC connections on the defined port.
-Reports are sent to the Master address via UDP connection.
 
 ## Installation
 ### Prerequisites
 * go > 1.6 
 ### Install
+If using a linux system, the **host-monitor.service** daemon can be used to build and run the program.
 ```
-    go get 
-    go build
+    ./setup-service.sh
+```
+On other systems, the program can be started manually after building.
+```
+    go build main.go
+    ./main
 ```
