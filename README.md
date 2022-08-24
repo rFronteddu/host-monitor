@@ -33,6 +33,9 @@ The host monitor will look for a configuration file called **hostmonitor.yaml**.
     ReportPeriod: "2"
     # The port to listen for GRPC pings
     PingerProxyPort: "8100"
+    # MQTT subscription information'
+    MQTTBroker: ""
+    MQTTTopic: ""
 ```
 
 ## Installation

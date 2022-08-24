@@ -5,6 +5,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"hostmonitor/grpc"
 	"hostmonitor/measure"
+	"hostmonitor/mqtt"
 	"hostmonitor/probers"
 	"hostmonitor/sensors"
 	"hostmonitor/transport"
@@ -26,13 +27,15 @@ type Configuration struct {
 	BoardIP         string `yaml:"BoardIP"`
 	ReportPeriod    string `yaml:"ReportPeriod"`
 	PingerProxyPort string `yaml:"PingerProxyPort"`
+	MQTTBroker      string `yaml:"MQTTBroker"`
+	MQTTTopic       string `yaml:"MQTTTopic"`
 }
 
 func loadConfiguration(path string) *Configuration {
 	yfile, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Printf("Could not open %s error: %s\n", path, err)
-		conf := &Configuration{true, true, true, true, true, true, "127.0.0.1:8758", "127.0.0.1", "30", "8090"}
+		conf := &Configuration{true, true, true, true, true, true, "127.0.0.1:8758", "127.0.0.1", "30", "8090", "", ""}
 		fmt.Printf("Host Monitor will use default configuration: %v\n", conf)
 		return conf
 	}
@@ -106,6 +109,10 @@ func main() {
 	if conf.LoadSensor {
 		loadSensor := sensors.NewSensor(sensors.NewLoadSensor(time.Minute), "Load Sensor", reportCh)
 		loadSensor.Start()
+	}
+
+	if conf.MQTTBroker != "" {
+		mqtt.NewSubscriber(conf.MQTTBroker, conf.MQTTTopic, reportCh)
 	}
 
 	reportPeriod := 30
