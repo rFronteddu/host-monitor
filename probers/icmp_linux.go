@@ -1,14 +1,14 @@
-//go:build linux || darwin
+//go:build linux
 
 package probers
 
 import (
 	"bytes"
 	"fmt"
-	pb "hostmonitor/pinger"
 	"os/exec"
 	"strconv"
 	"strings"
+	pb "testbed-monitor/pinger"
 )
 
 func ping(target string, replyCh chan *pb.PingReply) {
@@ -29,7 +29,6 @@ func ping(target string, replyCh chan *pb.PingReply) {
 		return
 	}
 
-	var packetsReceived int
 	var rtt int
 	var loss int
 	var reachable = false
@@ -54,7 +53,7 @@ func ping(target string, replyCh chan *pb.PingReply) {
 		}
 	}
 
-	fmt.Printf("Loss: %v Avg rtt: %v\n", packetsReceived, rtt)
+	fmt.Printf("Loss: %v Avg rtt: %v\n", loss, rtt)
 
 	replyCh <- &pb.PingReply{
 		Reachable:      reachable,
