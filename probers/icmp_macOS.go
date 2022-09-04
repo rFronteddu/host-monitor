@@ -1,4 +1,4 @@
-//go:build linux || darwin
+//go:build darwin
 
 package probers
 
@@ -48,7 +48,7 @@ func ping(target string, replyCh chan *pb.PingReply) {
 				reachable = true
 			}
 		}
-		if strings.Contains(token, "rtt min/avg/max/mdev") {
+		if strings.Contains(token, "round-trip min/avg/max/mdev") {
 			fmt.Println("Parsing: " + token)
 			rtt = extractRTT(token)
 		}
@@ -64,14 +64,14 @@ func ping(target string, replyCh chan *pb.PingReply) {
 }
 
 func extractReceived(token string) int {
-	s := strings.Replace(token, "received", "", -1)
+	s := strings.Replace(token, "packets received", "", -1)
 	s1 := strings.TrimSpace(s)
 	received, _ := strconv.Atoi(strings.TrimSpace(s1))
 	return received
 }
 
 func extractRTT(token string) int {
-	s := strings.Replace(token, "rtt min/avg/max/mdev =", "", -1)
+	s := strings.Replace(token, "round-trip min/avg/max/mdev =", "", -1)
 	s1 := strings.Replace(s, "ms", "", -1)
 	s2 := strings.TrimSpace(s1)
 	fmt.Println("S2: " + s2)
