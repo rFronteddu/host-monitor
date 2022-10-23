@@ -38,7 +38,7 @@ func (rebootCounter *RebootCounter) Start(inCh chan *measure.Measure) {
 	}()
 }
 
-// GetReboots This function runs reboots.sh which returns the number of reboots for the current day
+// GetReboots
 func GetReboots() int64 {
 	c1 := "day=$(Get-Date)"
 	c2 := "log=$(Get-WinEvent -FilterHashtable @{LogName = 'System';id=6006; StartTime=$day})"
