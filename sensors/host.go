@@ -28,6 +28,6 @@ func (sensor *Host) Poll(measure *measure.Measure) {
 	measure.Strings["os"] = h.OS
 	measure.Strings["platform"] = h.Platform
 	measure.Strings["kernelArch"] = h.KernelArch
-	measure.Strings["bootTime"] = time.Unix(int64(h.BootTime), 0).Format(time.RFC822)
+	measure.Integers["bootTime"] = int64(h.BootTime)
 	measure.Integers["uptime"] = int64(h.Uptime)
 }
