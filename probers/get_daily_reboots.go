@@ -40,8 +40,7 @@ func (rebootCounter *RebootCounter) Start(inCh chan *measure.Measure) {
 
 // GetReboots This function runs reboots.sh which returns the number of reboots for the current day
 func GetReboots() int64 {
-	cmd, err := exec.Command("./reboots.sh").Output()
-	fmt.Println("REBOOTS: ", string(cmd))
+	cmd, err := exec.Command("./probers/reboots.sh").Output()
 	if err != nil {
 		fmt.Printf("Error trying to get # of reboots: %v\n", err)
 		return 100
@@ -51,6 +50,5 @@ func GetReboots() int64 {
 		fmt.Printf("Error parsing system response: %v\n", err)
 		return 100
 	}
-	//fmt.Printf("Number of reboots today: %v\n", reboots)
 	return int64(reboots)
 }
