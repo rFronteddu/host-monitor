@@ -5,6 +5,7 @@ package probers
 import (
 	"bytes"
 	pb "hostmonitor/pinger"
+	"log"
 	"os/exec"
 	"strconv"
 	"strings"
