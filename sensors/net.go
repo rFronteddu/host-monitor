@@ -1,9 +1,9 @@
 package sensors
 
 import (
-	"fmt"
 	"github.com/shirou/gopsutil/v3/net"
 	"hostmonitor/measure"
+	"log"
 	"time"
 )
 
@@ -22,5 +22,5 @@ func (nets *NetSensor) Poll(measure *measure.Measure) {
 	iList, _ := net.Interfaces()
 	// if pernic is true, returns result divided by interface, returns a summary otherwise
 	counter, _ := net.IOCounters(false)
-	fmt.Printf("Net Report - Interfaces: %v Counters: %v\n", iList, counter)
+	log.Printf("Net Report - Interfaces: %v Counters: %v\n", iList, counter)
 }

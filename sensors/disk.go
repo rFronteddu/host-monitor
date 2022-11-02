@@ -1,9 +1,9 @@
 package sensors
 
 import (
-	"fmt"
 	"github.com/shirou/gopsutil/v3/disk"
 	"hostmonitor/measure"
+	"log"
 	"time"
 )
 
@@ -20,7 +20,7 @@ func NewDiskSensor(period time.Duration) *Disk {
 func (sensor *Disk) Poll(measure *measure.Measure) {
 	time.Sleep(sensor.period)
 	usage, _ := disk.Usage("/")
-	fmt.Printf("Disk Report - Usage: %v\n", usage)
+	log.Printf("Disk Report - Usage: %v\n", usage)
 	measure.Integers["DISK_USAGE"] = int64(usage.UsedPercent)
 	measure.Integers["DISK_FREE"] = int64(usage.Free) / 1024 / 1024 / 1024
 	measure.Integers["DISK_USED"] = int64(usage.Used) / 1024 / 1024 / 1024

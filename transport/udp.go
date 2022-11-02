@@ -1,10 +1,10 @@
 package transport
 
 import (
-	"fmt"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/protobuf/proto"
 	"hostmonitor/measure"
+	"log"
 	"net"
 	"time"
 )
@@ -38,9 +38,9 @@ func (udpc *UDPClient) sendReports() {
 	m0.Strings["host_id"] = "Hello"
 	out0, marshalError0 := proto.Marshal(m0)
 	if marshalError0 != nil {
-		fmt.Printf("Encountered an error while marshaling measure %v\n", marshalError0)
+		log.Printf("Encountered an error while marshaling measure %v\n", marshalError0)
 	}
-	fmt.Printf("Sending handshake to %s, %s\n", udpc.destination, m0.String())
+	log.Printf("Sending handshake to %s, %s\n", udpc.destination, m0.String())
 	udpc.send(out0)
 
 	ticker := time.NewTicker(udpc.period)
@@ -56,10 +56,10 @@ func (udpc *UDPClient) sendReports() {
 			m.Timestamp = &timestamp.Timestamp{Seconds: time.Now().Unix()}
 			out, marshalError := proto.Marshal(m)
 			if marshalError != nil {
-				fmt.Printf("Encountered an error while marshaling measure %v\n", marshalError)
+				log.Printf("Encountered an error while marshaling measure %v\n", marshalError)
 				break
 			}
-			fmt.Printf("Sending report to %s, %s\n", udpc.destination, m.String())
+			log.Printf("Sending report to %s, %s\n", udpc.destination, m.String())
 			udpc.send(out)
 			m = &measure.Measure{
 				Subject:  measure.Subject_os,
@@ -85,11 +85,11 @@ func (udpc *UDPClient) sendReports() {
 func (udpc *UDPClient) send(buff []byte) {
 	conn, err := net.Dial("udp", udpc.destination)
 	if err != nil {
-		fmt.Printf("Sending buffer returned an error: %v\n", err)
+		log.Printf("Sending buffer returned an error: %v\n", err)
 		return
 	}
 	_, writeError := conn.Write(buff)
 	if writeError != nil {
-		fmt.Printf("conn.Write(m) failed with error: %v\n", writeError)
+		log.Printf("conn.Write(m) failed with error: %v\n", writeError)
 	}
 }

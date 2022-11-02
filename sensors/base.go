@@ -3,6 +3,7 @@ package sensors
 import (
 	"fmt"
 	"hostmonitor/measure"
+	"log"
 	"time"
 )
 
@@ -21,7 +22,7 @@ func NewSensor(sensor sensor, tag string, outCh chan *measure.Measure) *BaseSens
 }
 
 func (base *BaseSensor) Start() {
-	fmt.Printf("Starting %s...\n", base.tag)
+	log.Printf("Starting %s...\n", base.tag)
 	go func() {
 		for {
 			base.poll()
