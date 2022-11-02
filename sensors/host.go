@@ -30,4 +30,7 @@ func (sensor *Host) Poll(measure *measure.Measure) {
 	measure.Strings["kernelArch"] = h.KernelArch
 	measure.Integers["bootTime"] = int64(h.BootTime)
 	measure.Integers["uptime"] = int64(h.Uptime)
+	if measure.Integers["uptime"] < 10*60 {
+		measure.Integers["reboot_sensor"] = 1
+	}
 }

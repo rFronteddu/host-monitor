@@ -93,9 +93,6 @@ func main() {
 	board := probers.NewBoardMonitor()
 	board.Start(boardAddress, reportCh)
 
-	reboot := probers.NewRebootCounter()
-	reboot.Start(reportCh)
-
 	if conf.VMSensor {
 		virtualMemorySensor := sensors.NewSensor(sensors.NewVirtualMemorySensor(time.Minute), "Disk Sensor", reportCh)
 		virtualMemorySensor.Start()
