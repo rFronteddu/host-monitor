@@ -30,7 +30,7 @@ func (sensor *Host) Poll(measure *measure.Measure) {
 	measure.Strings["kernelArch"] = h.KernelArch
 	measure.Integers["bootTime"] = int64(h.BootTime)
 	measure.Integers["uptime"] = int64(h.Uptime)
-	if measure.Integers["uptime"] < 60*5 { //5 minutes to reboot and restart service
+	if measure.Integers["uptime"] < 60*3 { // 3 minute buffer to reboot and restart service
 		measure.Integers["reboot_sensor"] = 1
 	}
 }
