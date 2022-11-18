@@ -9,7 +9,9 @@ import (
 	"hostmonitor/sensors"
 	"hostmonitor/transport"
 	"io/ioutil"
+	"log"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -31,9 +33,9 @@ type Configuration struct {
 func loadConfiguration(path string) *Configuration {
 	yfile, err := ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Printf("Could not open %s error: %s\n", path, err)
+		log.Printf("Could not open %s error: %s\n", path, err)
 		conf := &Configuration{true, true, true, true, true, true, "127.0.0.1:8758", "127.0.0.1", "30", "8090"}
-		fmt.Printf("Host Monitor will use default configuration: %v\n", conf)
+		log.Printf("Host Monitor will use default configuration: %v\n", conf)
 		return conf
 	}
 	if yfile == nil {
@@ -42,11 +44,11 @@ func loadConfiguration(path string) *Configuration {
 	conf := Configuration{Master: "127.0.0.1:8758"}
 	err2 := yaml.Unmarshal(yfile, &conf)
 	if err2 != nil {
-		fmt.Printf("Configuration file could not be parsed, error: %s\n", err2)
+		log.Printf("Configuration file could not be parsed, error: %s\n", err2)
 		panic(err2)
 	}
 
-	fmt.Printf("Found configuration: %v\n", conf)
+	log.Printf("Found configuration: %v\n", conf)
 	return &conf
 }
 
@@ -66,6 +68,15 @@ func GetOutboundIP() string {
 }
 
 func main() {
+	version := "11-1-2022"
+	fmt.Println("Running software version ", version)
+	file, errl := os.OpenFile("./log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	if errl != nil {
+		log.Fatalf("Unable to create log file\n%s", errl)
+	}
+	log.SetOutput(file)
+	fmt.Println("Program output will be logged in ./log")
+
 	conf := loadConfiguration("hostmonitor.yaml")
 	reportCh := make(chan *measure.Measure)
 
@@ -77,13 +88,10 @@ func main() {
 		s := strings.Split(outboundIP, ".")
 		s[len(s)-1] = "1"
 		boardAddress = strings.Join(s[:], ".")
-		fmt.Println("The board address was not specified so it was automatically detected as: " + boardAddress)
+		log.Println("The board address was not specified so it was automatically detected as: " + boardAddress)
 	}
 	board := probers.NewBoardMonitor()
 	board.Start(boardAddress, reportCh)
-
-	reboot := probers.NewRebootCounter()
-	reboot.Start(reportCh)
 
 	if conf.VMSensor {
 		virtualMemorySensor := sensors.NewSensor(sensors.NewVirtualMemorySensor(time.Minute), "Disk Sensor", reportCh)
@@ -116,9 +124,9 @@ func main() {
 	if conf.ReportPeriod != "" {
 		reportPeriod, err = strconv.Atoi(conf.ReportPeriod)
 		if err != nil {
-			fmt.Printf("Error converting %s to integer, period set to default (30)", conf.ReportPeriod)
+			log.Printf("Error converting %s to integer, period set to default (30)", conf.ReportPeriod)
 		}
-		fmt.Printf("Report period set to %v minutes\n", conf.ReportPeriod)
+		log.Printf("Report period set to %v minutes\n", conf.ReportPeriod)
 	}
 
 	t := transport.NewUDPClient(conf.Master, reportCh, time.Duration(reportPeriod)*time.Minute)
@@ -128,12 +136,25 @@ func main() {
 	if conf.PingerProxyPort != "" {
 		pingerProxyPort, err = strconv.Atoi(conf.PingerProxyPort)
 		if err != nil {
-			fmt.Printf("Error converting %s to integer, pinger proxy port set to default (8090)", conf.ReportPeriod)
+			log.Printf("Error converting %s to integer, pinger proxy port set to default (8090)", conf.ReportPeriod)
 		}
-		fmt.Printf("Pinger proxy port set to: %v\n", conf.PingerProxyPort)
+		log.Printf("Pinger proxy port set to: %v\n", conf.PingerProxyPort)
 	}
 	server := grpc.NewPingerProxy(pingerProxyPort)
 	server.Start()
+
+	// Flush the log every week
+	go func() {
+		logFlush := time.NewTicker(time.Hour * 24 * 7)
+		for {
+			select {
+			case <-logFlush.C:
+				if err != nil {
+					log.Fatalf("Unable to clear log file\n%s", err)
+				}
+			}
+		}
+	}()
 
 	quitCh := make(chan int)
 	<-quitCh

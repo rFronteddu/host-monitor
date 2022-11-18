@@ -4,8 +4,8 @@ package probers
 
 import (
 	"bytes"
-	"fmt"
 	pb "hostmonitor/pinger"
+	"log"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -21,7 +21,7 @@ func ping(target string, replyCh chan *pb.PingReply) {
 	err := cmd.Run()
 
 	if err != nil {
-		fmt.Printf("Unable to ping %s\n", target)
+		log.Printf("Unable to ping %s\n", target)
 		replyCh <- &pb.PingReply{
 			Reachable:      false,
 			AvgRtt:         0,
@@ -36,9 +36,9 @@ func ping(target string, replyCh chan *pb.PingReply) {
 
 	s1 := strings.Split(out.String(), "\n")
 	for _, s := range s1 {
-		fmt.Println(s)
+		log.Println(s)
 		if strings.Contains(s, "unreachable") {
-			fmt.Printf("Destination %s unreachable\n", target)
+			log.Printf("Destination %s unreachable\n", target)
 			replyCh <- &pb.PingReply{
 				Reachable:      false,
 				AvgRtt:         0,
@@ -54,7 +54,7 @@ func ping(target string, replyCh chan *pb.PingReply) {
 		}
 	}
 
-	fmt.Printf("Packet sent: %v Packets received: %v Avg rtt: %v\n", packetsSent, packetsReceived, rtt)
+	log.Printf("Packet sent: %v Packets received: %v Avg rtt: %v\n", packetsSent, packetsReceived, rtt)
 	replyCh <- &pb.PingReply{
 		Reachable:      true,
 		AvgRtt:         int32(rtt),
