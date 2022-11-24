@@ -21,8 +21,8 @@ func (vms *VirtualMemorySensor) Poll(measure *measure.Measure) {
 	time.Sleep(vms.period)
 	v, _ := mem.VirtualMemory()
 	log.Printf("Memory Report - Total: %v, Free: %v, UsedPercent: %f%%\n", v.Total, v.Free, v.UsedPercent)
-	measure.Integers["vm_used_percent"] = int64(v.UsedPercent)
-	measure.Integers["vm_free"] = int64(v.Free) / 1024 / 1024
-	measure.Integers["vm_used"] = int64(v.Used) / 1024 / 1024
-	measure.Integers["vm_total"] = int64(v.Total) / 1024 / 1024
+	measure.Integers["vmUsedPercent"] = int64(v.UsedPercent)
+	measure.Integers["vmFree"] = int64(v.Free) / 1024 / 1024
+	measure.Integers["vmUsed"] = int64(v.Used) / 1024 / 1024
+	measure.Integers["vmTotal"] = int64(v.Total) / 1024 / 1024
 }

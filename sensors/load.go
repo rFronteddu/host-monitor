@@ -21,7 +21,7 @@ func (sensor *Load) Poll(measure *measure.Measure) {
 	time.Sleep(sensor.period)
 	loadAvg, _ := load.Avg()
 	log.Printf("Load Report - %v\n", loadAvg)
-	measure.Integers["LOAD_1"] = int64(loadAvg.Load1)
-	measure.Integers["LOAD_5"] = int64(loadAvg.Load5)
-	measure.Integers["LOAD_15"] = int64(loadAvg.Load15)
+	measure.Integers["load1"] = int64(loadAvg.Load1)
+	measure.Integers["load5"] = int64(loadAvg.Load5)
+	measure.Integers["load15"] = int64(loadAvg.Load15)
 }
