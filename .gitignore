@@ -30,3 +30,6 @@ main
 # Report files
 *.txt
 log
+
+# Other files
+traps.json
