@@ -52,47 +52,23 @@ func loadConfiguration(path string) *Configuration {
 	return &conf
 }
 
-// Get preferred outbound ip of this machine
-func GetOutboundIP() string {
-	for {
-		conn, err := net.Dial("udp", "8.8.8.8:80")
-		if err != nil {
-			fmt.Println(err.Error() + ", will try again in 5 seconds")
-			time.Sleep(5 * time.Second)
-			continue
-		}
-		defer conn.Close()
-
-		return conn.LocalAddr().(*net.UDPAddr).IP.String()
-	}
-}
-
-// Get network interfaces
-func localAddresses() {
-	ifaces, err := net.Interfaces()
+// Get IPv4 from Network Interfaces
+func localAddress() string {
+	host, err := os.Hostname()
 	if err != nil {
-		log.Print(fmt.Errorf("localAddresses: %v\n", err.Error()))
-		return
+		log.Fatalf("Error retrieving hostname: %v\n", err.Error())
 	}
-	for _, i := range ifaces {
-		addrs, err := i.Addrs()
-		if err != nil {
-			fmt.Print(fmt.Errorf("localAddresses: %v\n", err.Error()))
-			continue
-		}
-		for _, a := range addrs {
-			fmt.Printf("%v %v\n", i.Name, a)
-		}
+	addrs, err2 := net.LookupIP(host)
+	if err2 != nil {
+		log.Fatalf("Error retrieving local addresses: %v\n", err2.Error())
 	}
-
-	fmt.Println("\nSecond code\n")
-	host, _ := os.Hostname()
-	addrs, _ := net.LookupIP(host)
+	ip := ""
 	for _, addr := range addrs {
 		if ipv4 := addr.To4(); ipv4 != nil {
-			fmt.Println("IPv4: ", ipv4)
+			ip = ipv4.String()
 		}
 	}
+	return ip
 }
 
 func main() {
@@ -108,14 +84,11 @@ func main() {
 	conf := loadConfiguration("hostmonitor.yaml")
 	reportCh := make(chan *measure.Measure)
 
-	// get ipv4
-	localAddresses()
-
 	var boardAddress string
 	if conf.BoardIP != "" {
 		boardAddress = conf.BoardIP
 	} else {
-		outboundIP := GetOutboundIP()
+		outboundIP := localAddress()
 		s := strings.Split(outboundIP, ".")
 		s[len(s)-1] = "1"
 		boardAddress = strings.Join(s[:], ".")
