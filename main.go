@@ -67,8 +67,36 @@ func GetOutboundIP() string {
 	}
 }
 
+// Get network interfaces
+func localAddresses() {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		log.Print(fmt.Errorf("localAddresses: %v\n", err.Error()))
+		return
+	}
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			fmt.Print(fmt.Errorf("localAddresses: %v\n", err.Error()))
+			continue
+		}
+		for _, a := range addrs {
+			fmt.Printf("%v %v\n", i.Name, a)
+		}
+	}
+
+	fmt.Println("\nSecond code\n")
+	host, _ := os.Hostname()
+	addrs, _ := net.LookupIP(host)
+	for _, addr := range addrs {
+		if ipv4 := addr.To4(); ipv4 != nil {
+			fmt.Println("IPv4: ", ipv4)
+		}
+	}
+}
+
 func main() {
-	version := "11-24-2022"
+	version := "11-27-2022"
 	fmt.Println("Running software version ", version)
 	file, errl := os.OpenFile("./log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if errl != nil {
@@ -79,6 +107,9 @@ func main() {
 
 	conf := loadConfiguration("hostmonitor.yaml")
 	reportCh := make(chan *measure.Measure)
+
+	// get ipv4
+	localAddresses()
 
 	var boardAddress string
 	if conf.BoardIP != "" {
