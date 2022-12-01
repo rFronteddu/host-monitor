@@ -52,23 +52,27 @@ func loadConfiguration(path string) *Configuration {
 	return &conf
 }
 
-// Get preferred outbound ip of this machine
-func GetOutboundIP() string {
-	for {
-		conn, err := net.Dial("udp", "8.8.8.8:80")
-		if err != nil {
-			fmt.Println(err.Error() + ", will try again in 5 seconds")
-			time.Sleep(5 * time.Second)
-			continue
-		}
-		defer conn.Close()
-
-		return conn.LocalAddr().(*net.UDPAddr).IP.String()
+// Get IPv4 from Network Interfaces
+func localAddress() string {
+	host, err := os.Hostname()
+	if err != nil {
+		log.Fatalf("Error retrieving hostname: %v\n", err.Error())
 	}
+	addrs, err2 := net.LookupIP(host)
+	if err2 != nil {
+		log.Fatalf("Error retrieving local addresses: %v\n", err2.Error())
+	}
+	ip := ""
+	for _, addr := range addrs {
+		if ipv4 := addr.To4(); ipv4 != nil {
+			ip = ipv4.String()
+		}
+	}
+	return ip
 }
 
 func main() {
-	version := "11-24-2022"
+	version := "11-27-2022"
 	fmt.Println("Running software version ", version)
 	file, errl := os.OpenFile("./log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if errl != nil {
@@ -84,7 +88,7 @@ func main() {
 	if conf.BoardIP != "" {
 		boardAddress = conf.BoardIP
 	} else {
-		outboundIP := GetOutboundIP()
+		outboundIP := localAddress()
 		s := strings.Split(outboundIP, ".")
 		s[len(s)-1] = "1"
 		boardAddress = strings.Join(s[:], ".")
